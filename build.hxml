@@ -1,0 +1,6 @@
+-cp src
+-cp playground
+-main Main
+-js main.js
+-dce full
+-D analyzer-optimize
