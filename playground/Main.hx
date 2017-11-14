@@ -1,3 +1,5 @@
+// example classes from https://medium.com/@isoron/a-friendly-introduction-to-dagger-2-part-1-dbdf2f3fb17b
+
 class WeatherReporter {
 	final weatherService:WeatherService;
 	final locationManager:LocationManager;
@@ -24,6 +26,7 @@ class WeatherService {
 
 class Logger {
 	public function new() {}
+	public function log(msg) trace(msg);
 }
 
 class WebSocket {
@@ -44,16 +47,34 @@ class GPSProvider {
 	public function new() {}
 }
 
+// say we'd like to have a service locator kind of thing
+class Services extends stiletto.Module {
+	function provideLogger():Logger;
+}
+
 class Main {
 	static function main() {
-		var logger = new Logger();
+		// create a service locator, which is also an injector
+		var services = Stiletto.resolve(Services.new, [
+			Logger.new,
+		]);
+
 		var reporter = Stiletto.resolve(WeatherReporter.new, [
 			WeatherService.new,
-			() -> logger,
 			WebSocket.new,
 			LocationManager.new,
 			GPSProvider.new,
+			services, // use service locator as a sub-injector
 		]);
+
 		reporter.report();
+
+		// use service locator as service locator :)
+		services.provideLogger().log("Hi again");
+
+		// use service locator as an injector
+		services.resolve(function(logger:Logger) {
+			logger.log("hi");
+		});
 	}
 }
